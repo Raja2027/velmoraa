@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+python-multipart
+sqlalchemy
+pgvector
+psycopg2-binary
+deepface
+opencv-python-headless
+boto3
+PyJWT
+passlib[bcrypt]
+python-dotenv
+tf-keras
+google-cloud-storage

@@ -1,0 +1,45 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+service-account*.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Local databases and uploaded media
+*.db
+backend/public/uploads/*
+!backend/public/uploads/.gitkeep
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Android / Gradle
+.gradle/
+local.properties
+*.iml
+.idea/
+android/build/
+android/**/build/
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.vscode/
+
