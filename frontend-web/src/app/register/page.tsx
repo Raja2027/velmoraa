@@ -1,22 +1,27 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { apiUrl } from "@/lib/api";
 
 import { Suspense } from "react";
 
 function RegisterForm() {
+  const { data: session } = useSession();
   const searchParams = useSearchParams();
   const prefillEmail = searchParams.get("email") || "";
   const prefillName = searchParams.get("name") || "";
-  const fromGoogle = !!prefillEmail;
+  const prefillImage = searchParams.get("image") || "";
+  const googleEmail = prefillEmail || session?.user?.email || "";
+  const googleName = prefillName || session?.user?.name || "";
+  const googleImage = prefillImage || session?.user?.image || "";
+  const fromGoogle = !!googleEmail;
 
   const [form, setForm] = useState({
-    email: prefillEmail,
-    name: prefillName,
+    email: googleEmail,
+    name: googleName,
     username: "",
     password: "",
     dob: "",
@@ -29,6 +34,7 @@ function RegisterForm() {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const googleImageLoadedRef = useRef(false);
   const [isRecording, setIsRecording] = useState(false);
 
   const [error, setError] = useState("");
@@ -36,6 +42,36 @@ function RegisterForm() {
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
+
+  useEffect(() => {
+    if (!googleEmail && !googleName) return;
+    setForm(f => ({
+      ...f,
+      email: f.email || googleEmail,
+      name: f.name || googleName,
+    }));
+  }, [googleEmail, googleName]);
+
+  useEffect(() => {
+    if (!googleImage || googleImageLoadedRef.current) return;
+    googleImageLoadedRef.current = true;
+    setFilePreview(current => current || googleImage);
+
+    fetch(googleImage)
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to load Google profile image");
+        return res.blob();
+      })
+      .then(blob => {
+        const imageFile = new File([blob], "google-profile-photo.jpg", {
+          type: blob.type || "image/jpeg",
+        });
+        setFile(current => current || imageFile);
+      })
+      .catch(() => {
+        // Keep the preview if Google blocks downloading the avatar; user can upload manually.
+      });
+  }, [googleImage]);
 
   const startRecording = async () => {
     try {
@@ -228,6 +264,7 @@ function RegisterForm() {
               placeholder="Email address"
               value={form.email}
               onChange={set("email")}
+              readOnly={fromGoogle}
               className="input"
               style={{ padding: "14px 16px", borderRadius: "var(--radius-xl)" }}
             />
